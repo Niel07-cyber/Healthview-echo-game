@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video, Stethoscope, Trophy, Database, Bot, GraduationCap, Zap } from "lucide-react";
+import doctorVsAi from "@/assets/doctor-vs-ai.jpg";
 
 const Index = () => {
   const steps = [
@@ -113,6 +114,14 @@ const Index = () => {
         <div className="lg:col-span-4 flex flex-col justify-between">
           <Card className="text-center p-6 shadow-elegant flex-1 flex flex-col justify-center">
             <div className="space-y-6">
+              {/* Doctor vs AI Image */}
+              <div className="mb-4">
+                <img 
+                  src={doctorVsAi} 
+                  alt="Doctor challenging AI" 
+                  className="w-full h-32 object-cover rounded-lg shadow-md"
+                />
+              </div>
               <div>
                 <h2 className="text-2xl font-bold mb-3 text-foreground">
                   Ready to Challenge the AI?
