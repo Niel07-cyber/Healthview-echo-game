@@ -59,7 +59,7 @@ const Index = () => {
       </header>
 
       {/* Main Content - Single Screen Layout */}
-      <main className="flex-1 container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full max-h-full">
+      <main className="flex-1 container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full max-h-full pb-16">
         
         {/* How It Works - Left Column */}
         <div className="lg:col-span-4 space-y-4">
@@ -111,15 +111,15 @@ const Index = () => {
         </div>
 
         {/* CTA Section - Right Column */}
-        <div className="lg:col-span-4 flex flex-col justify-between">
-          <Card className="text-center p-6 shadow-elegant flex-1 flex flex-col justify-center">
+        <div className="lg:col-span-4">
+          <Card className="text-center p-6 shadow-elegant h-full flex flex-col justify-center">
             <div className="space-y-6">
               {/* Doctor vs AI Image */}
               <div className="mb-4">
                 <img 
                   src={doctorVsAi} 
                   alt="Doctor challenging AI" 
-                  className="w-full h-32 object-cover rounded-lg shadow-md"
+                  className="w-full h-48 object-cover rounded-lg shadow-md"
                 />
               </div>
               <div>
@@ -138,18 +138,18 @@ const Index = () => {
               </div>
             </div>
           </Card>
-          
-          {/* University Info */}
-          <Card className="mt-4 p-4 bg-muted">
-            <div className="text-center text-xs text-muted-foreground space-y-1">
-              <p className="font-medium text-foreground">Data Mining</p>
-              <p>Johannes Gutenberg University</p>
-              <p>Mainz, Germany</p>
-            </div>
-          </Card>
         </div>
 
       </main>
+
+      {/* Footer */}
+      <footer className="bg-muted border-t py-3 px-4">
+        <div className="container mx-auto text-center">
+          <p className="text-xs text-muted-foreground">
+            Data Mining • Johannes Gutenberg University • Mainz, Germany
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
