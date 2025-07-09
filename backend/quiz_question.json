@@ -1,0 +1,77 @@
+[
+  {
+    "id": "1",
+    "question": "What is the most likely EF value for this heart?",
+    "videoUrl": "http://127.0.0.1:5000/videos/0X100009310A3BD7FC.mp4",
+    "answers": ["Normal", "Reduced", "Abnormal"],
+    "correct": "Normal",
+    "metadata": {
+      "ESV": 45,
+      "EDV": 120,
+      "FrameHeight": 480,
+      "FrameWidth": 640,
+      "FPS": 30,
+      "NumberOfFrames": 90
+    }
+  },
+  {
+    "id": "2",
+    "question": "What is the most likely EF value for this heart?",
+    "videoUrl": "http://127.0.0.1:5000/videos/0X1002E8FBACD08477.mp4",
+    "answers": ["Normal", "Reduced", "Abnormal"],
+    "correct": "Reduced",
+    "metadata": {
+      "ESV": 55,
+      "EDV": 130,
+      "FrameHeight": 480,
+      "FrameWidth": 640,
+      "FPS": 25,
+      "NumberOfFrames": 75
+    }
+  },
+  {
+    "id": "3",
+    "question": "What is the most likely EF value for this heart?",
+    "videoUrl": "http://127.0.0.1:5000/videos/0X1005D03EED19C65B.mp4",
+    "answers": ["Normal", "Reduced", "Abnormal"],
+    "correct": "Abnormal",
+    "metadata": {
+      "ESV": 75,
+      "EDV": 140,
+      "FrameHeight": 480,
+      "FrameWidth": 640,
+      "FPS": 28,
+      "NumberOfFrames": 84
+    }
+  },
+  {
+    "id": "4",
+    "question": "What is the most likely EF value for this heart?",
+    "videoUrl": "http://127.0.0.1:5000/videos/0X10075961BC11C88E.mp4",
+    "answers": ["Normal", "Reduced", "Abnormal"],
+    "correct": "Abnormal",
+    "metadata": {
+      "ESV": 95,
+      "EDV": 160,
+      "FrameHeight": 480,
+      "FrameWidth": 640,
+      "FPS": 30,
+      "NumberOfFrames": 120
+    }
+  },
+  {
+    "id": "5",
+    "question": "What is the most likely EF value for this heart?",
+    "videoUrl": "http://127.0.0.1:5000/videos/0X10094BA0A028EAC3.mp4",
+    "answers": ["Normal", "Reduced", "Abnormal"],
+    "correct": "Normal",
+    "metadata": {
+      "ESV": 40,
+      "EDV": 115,
+      "FrameHeight": 480,
+      "FrameWidth": 640,
+      "FPS": 32,
+      "NumberOfFrames": 96
+    }
+  }
+]

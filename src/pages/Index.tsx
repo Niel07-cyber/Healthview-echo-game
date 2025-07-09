@@ -132,6 +132,7 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 font-semibold shadow-red hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  onClick={() => window.location.href = '/quiz'}
                 >
                   Start Quiz vs AI
                 </Button>
