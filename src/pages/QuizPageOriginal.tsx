@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { QuizQuestion, QuizResults } from '../types/quiz';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Trophy, Clock, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 const QuizPageOriginal: React.FC = () => {
   const [title] = useState("Quiz with AI");
@@ -21,6 +23,9 @@ const QuizPageOriginal: React.FC = () => {
   const [previousResults, setPreviousResults] = useState<any[]>([]);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<string>('0:00');
+  const [currentTime, setCurrentTime] = useState<string>('0:00');
 
   const currentQuestion = questions[currentIndex];
 
@@ -39,6 +44,35 @@ const QuizPageOriginal: React.FC = () => {
     }
   }, [currentIndex, playbackSpeed]);
 
+  // Calculate elapsed time
+  const calculateElapsedTime = () => {
+    if (!startTime) return '0:00';
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Real-time timer update during quiz
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (started && !quizEnded && startTime) {
+      interval = setInterval(() => {
+        setCurrentTime(calculateElapsedTime());
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [started, quizEnded, startTime]);
+
+  // Update elapsed time when quiz ends
+  useEffect(() => {
+    if (quizEnded && startTime) {
+      setElapsedTime(calculateElapsedTime());
+    }
+  }, [quizEnded, startTime]);
+
   // Get or create user ID (similar to original)
   const getUserID = () => {
     if (typeof document === 'undefined') return 'user_default';
@@ -54,6 +88,7 @@ const QuizPageOriginal: React.FC = () => {
   const startQuiz = async () => {
     setStarted(true);
     setLoading(true);
+    setStartTime(Date.now());
     
     try {
       const response = await fetch('/api/questions');
@@ -114,10 +149,22 @@ const QuizPageOriginal: React.FC = () => {
       setFeedbackMessage("Rätt svar! 🎉");
     } else {
       setFeedbackMessage(`Fel svar. Rätt svar var: ${correctAnswer}`);
+      
+      // Generate explanation based on correct answer
+      let explanation = "";
+      if (correctAnswer === "Normal") {
+        explanation = "Normal left ventricular ejection fraction is typically between 50-70%. Values in this range indicate good cardiac pumping function.";
+      } else if (correctAnswer === "Reduced") {
+        explanation = "Reduced ejection fraction (typically <40%) indicates impaired left ventricular systolic function, often associated with heart failure.";
+      } else if (correctAnswer === "Abnormal") {
+        explanation = "This echocardiogram shows abnormal cardiac function that doesn't fit the normal parameters, requiring further clinical evaluation.";
+      }
+
       setIncorrectAnswers(prev => [...prev, {
         question: question.question,
         selected: selectedAnswer,
-        correct: correctAnswer
+        correct: correctAnswer,
+        explanation: explanation
       }]);
     }
 
@@ -180,6 +227,9 @@ const QuizPageOriginal: React.FC = () => {
     setShowNextButton(false);
     setIncorrectAnswers([]);
     setPlaybackSpeed(1.0);
+    setStartTime(null);
+    setElapsedTime('0:00');
+    setCurrentTime('0:00');
   };
 
   return (
@@ -246,7 +296,7 @@ const QuizPageOriginal: React.FC = () => {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="font-mono">00:12</span>
+                      <span className="font-mono">{currentTime}</span>
                     </div>
                     
                     <div className="flex items-center gap-4">
@@ -434,108 +484,187 @@ const QuizPageOriginal: React.FC = () => {
 
         {/* Results Screen */}
         {quizEnded && (
-          <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <div className="space-y-6">
-            <Card className="text-center p-8 shadow-elegant">
-              <CardHeader>
-                <CardTitle className="text-3xl font-bold mb-4">The quiz is ready!</CardTitle>
-                <p className="text-xl">You got {score} of {questions.length} right!</p>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {/* Score Comparison */}
-                <Card className="p-6 bg-accent/10">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Score Comparison</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-center gap-8 text-lg">
-                      <div>
-                        <span className="font-medium">You: </span>
-                        <span className="font-bold text-2xl">{score}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium">🤖 AI: </span>
-                        <span className="font-bold text-2xl">{aiScore}</span>
+          <div className="min-h-screen bg-background">
+            {/* Header */}
+            <div className="border-b bg-white">
+              <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => window.location.href = '/'}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Home
+                </Button>
+                <h1 className="text-xl font-semibold">Assessment Results</h1>
+                <div className="w-24"></div> {/* Spacer for centering */}
+              </div>
+            </div>
+
+            <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
+              {/* Score Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Your Score */}
+                <Card className="text-center p-6">
+                  <CardContent className="space-y-4 pt-6">
+                    <div className="flex items-center justify-center gap-2 text-blue-600">
+                      <Trophy className="h-5 w-5" />
+                      <span className="font-medium">Your Score</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-4xl font-bold text-blue-600">{score}/{questions.length}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {Math.round((score / questions.length) * 100)}% Accuracy
                       </div>
                     </div>
-                    
-                    {score > aiScore && (
-                      <p className="text-green-600 font-semibold text-lg">
-                        Congratulations! You beat the AI! 🏆
-                      </p>
-                    )}
-                    {score < aiScore && (
-                      <p className="text-red-600 font-semibold text-lg">
-                        The AI won this time...🤖🏆
-                      </p>
-                    )}
-                    {score === aiScore && (
-                      <p className="text-yellow-600 font-semibold text-lg">
-                        Draw! Good job!😄
-                      </p>
-                    )}
                   </CardContent>
                 </Card>
 
-                {/* Incorrect Answers */}
-                {incorrectAnswers.length > 0 && (
-                  <Card className="text-left">
-                    <CardHeader>
-                      <CardTitle>Incorrect answers:</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {incorrectAnswers.map((item, index) => (
-                          <div key={index} className="p-4 border rounded-lg space-y-2">
-                            <p><span className="font-semibold">Question:</span> {item.question}</p>
-                            <p><span className="font-semibold text-red-600">Your answer:</span> {item.selected}</p>
-                            <p><span className="font-semibold text-green-600">Correct answer:</span> {item.correct}</p>
-                          </div>
-                        ))}
+                {/* AI Score */}
+                <Card className="text-center p-6">
+                  <CardContent className="space-y-4 pt-6">
+                    <div className="flex items-center justify-center gap-2 text-purple-600">
+                      <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">AI</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Previous Results */}
-                {previousResults.length > 0 && (
-                  <Card className="text-left">
-                    <CardHeader>
-                      <CardTitle>Your previous results</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {previousResults.map((result, i) => (
-                          <div key={i} className="p-3 border rounded">
-                            {result.timestamp} – {result.score}/{result.total}
-                          </div>
-                        ))}
+                      <span className="font-medium">AI Score</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-4xl font-bold text-purple-600">{aiScore}/{questions.length}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {Math.round((aiScore / questions.length) * 100)}% Accuracy
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button 
-                    onClick={restartQuiz}
-                    size="lg"
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-                  >
-                    Play again!
-                  </Button>
-                  <Button 
-                    onClick={() => window.location.href = '/'}
-                    variant="outline"
-                    size="lg"
-                    className="flex-1"
-                  >
-                    Return to Home
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                {/* Time Elapsed */}
+                <Card className="text-center p-6">
+                  <CardContent className="space-y-4 pt-6">
+                    <div className="flex items-center justify-center gap-2 text-green-600">
+                      <Clock className="h-5 w-5" />
+                      <span className="font-medium">Time Elapsed</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-4xl font-bold text-green-600">{elapsedTime}</div>
+                      <div className="text-sm text-muted-foreground">Total Duration</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Performance Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Performance Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Correct Answers */}
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Correct Answers</div>
+                        <div className="text-sm text-muted-foreground">
+                          {score} out of {questions.length} questions
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Incorrect Answers */}
+                    <div className="flex items-start gap-3">
+                      <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold">Incorrect Answers</div>
+                        <div className="text-sm text-muted-foreground">
+                          {incorrectAnswers.length} question{incorrectAnswers.length !== 1 ? 's' : ''} to review
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Comparison */}
+                  <div className="pt-4 border-t">
+                    <div className="font-medium mb-2">Comparison with AI Assistant</div>
+                    <div className="text-sm text-muted-foreground">
+                      {score > aiScore && `Great job! You scored ${score - aiScore} point${score - aiScore !== 1 ? 's' : ''} higher than the AI.`}
+                      {score < aiScore && `Good effort! The AI scored ${aiScore - score} point${aiScore - score !== 1 ? 's' : ''} higher.`}
+                      {score === aiScore && `Excellent! You matched the AI's performance exactly.`}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Review Incorrect Answers */}
+              {incorrectAnswers.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Review Incorrect Answers</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Accordion type="single" collapsible className="w-full">
+                      {incorrectAnswers.map((item, index) => (
+                        <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg mb-4 last:mb-0">
+                          <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                            <div className="flex items-center gap-2 text-left">
+                              <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                              <span className="font-medium">Question {index + 1}: {item.question}</span>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="px-4 pb-4">
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Your Answer */}
+                                <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                                  <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <div className="font-medium text-red-900">Your Answer</div>
+                                    <div className="text-red-700">{item.selected}</div>
+                                  </div>
+                                </div>
+
+                                {/* Correct Answer */}
+                                <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <div className="font-medium text-green-900">Correct Answer</div>
+                                    <div className="text-green-700">{item.correct}</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Explanation */}
+                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="font-medium text-blue-900 mb-2">Explanation</div>
+                                <div className="text-blue-800 text-sm leading-relaxed">
+                                  {item.explanation || `The correct answer is "${item.correct}". This is based on standard medical diagnostic criteria for echocardiogram interpretation.`}
+                                </div>
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={restartQuiz}
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                >
+                  Take Quiz Again
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/'}
+                  className="px-8 py-3 font-medium"
+                >
+                  Back to Home
+                </Button>
+              </div>
             </div>
           </div>
         )}
